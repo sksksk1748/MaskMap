@@ -123,6 +123,7 @@ export default {
   data: () => ({
     data: [],
     cityName,
+    osmMap: {},
     select: { //  for縣市選單
       city: '臺北市', // 預設縣市選單為台北市
       area: '大安區', // 預設區域設為大安區
@@ -133,22 +134,23 @@ export default {
   // components 更改為 methods
   methods: {
     updateMarker() {
-      const pharmaies = this.data.filter((pharmacy) => (
-        pharmacy.properties.county === this.select.city));
-
-      pharmaies.forEach((pharmacy) => {
+      const pharmacies = this.data.filter((pharmacy) => {
+        if (!this.select.area) {
+          return pharmacy.properties.county === this.select.city;
+        }
+        return pharmacy.properties.town === this.select.area;
+      });
+      pharmacies.forEach((pharmacy) => {
         const { properties, geometry } = pharmacy; // 新寫法(結構式寫法)
-        L.marker([
+        osm.addMapMarker(
           // pharmacy.geometry.coordinates[1], // 如果程式碼太長，可以改結構式寫法
           // pharmacy.geometry.coordinates[0], // 如果程式碼太長，可以改結構式寫法
-          geometry.coordinates[1], // 新寫法(結構式寫法)
           geometry.coordinates[0], // 新寫法(結構式寫法)
-        ]).addTo(osmMap).bindPopup(`<strong>${properties.name}</strong> <br>
-    口罩剩餘：<strong>成人 - ${properties.mask_adult ? `${properties.mask_adult} 個` : '未取得資料'}/ 兒童 - ${properties.mask_child ? `${properties.mask_child} 個` : '未取得資料'}</strong><br>
-    地址: <a href="https://www.google.com.tw/maps/place/${properties.address}" target="_blank">${properties.address}</a><br>
-    電話: ${properties.phone}<br>
-    <small>最後更新時間: ${properties.updated}</small>`);
+          geometry.coordinates[1], // 新寫法(結構式寫法)
+          properties,
+        );
       });
+      this.penTo(pharmacies[0]);
     },
     removeMarker() {
       osm.removeMapMarker();
@@ -167,11 +169,6 @@ export default {
     },
   },
   mounted() {
-    const url = 'https://raw.githubusercontent.com/kiang/pharmacies/master/json/points.json'; // 藥局資料
-    this.$http.get(url).then((response) => {
-      this.data = response.data.features;
-      this.updateMarker(); // 取得遠端資料後，插入圖標
-    });
     osmMap = L.map('map', { //  'map'對應到<div id="map">
       center: [25.03, 121.55], // 地圖起始座標
       zoom: 15, //  地圖縮放
@@ -181,8 +178,13 @@ export default {
       attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
       maxZoom: 18,
     }).addTo(osmMap);
+    const url = 'https://raw.githubusercontent.com/kiang/pharmacies/master/json/points.json'; // 藥局資料
+    this.$http.get(url).then((response) => {
+      this.data = response.data.features;
+      this.updateMarker(); // 取得遠端資料後，插入圖標
+    });
     // 插入圖標
-    L.marker([25.03, 121.55]).addTo(osmMap);
+    // L.marker([25.03, 121.55]).addTo(osmMap);
   },
 };
 </script>
