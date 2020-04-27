@@ -68,7 +68,55 @@ import cityName from './assets/cityName.json';
 
 let osmMap = {};
 
-console.log(L);
+const iconsConfig = {
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+};
+const icons = {
+  green: new L.Icon({
+    iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+    ...iconsConfig,
+  }),
+  grey: new L.Icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-grey.png',
+    ...iconsConfig,
+  }),
+};
+const osm = {
+  addMapMarker(x, y, item) {
+    const icon = item.mask_adult || item.mask_child ? icons.green : icons.grey;
+    L.marker([y, x], {
+      icon,
+    }).addTo(osmMap).bindPopup(`<strong>${item.name}</strong> <br>
+    口罩剩餘：<strong>成人 - ${item.mask_adult ? `${item.mask_adult} 個` : '未取得資料'}/ 兒童 - ${item.mask_child ? `${item.mask_child} 個` : '未取得資料'}</strong><br>
+    地址: <a href="https://www.google.com.tw/maps/place/${item.address}" target="_blank">${item.address}</a><br>
+    電話: ${item.phone}<br>
+    <small>最後更新時間: ${item.updated}</small>`);
+  },
+  removeMapMarker() {
+    osmMap.eachLayer((layer) => {
+      if (layer instanceof L.Marker) {
+        osmMap.removeLayer(layer);
+      }
+    });
+  },
+  penTo(x, y, item) {
+    console.log(x);
+    console.log(y);
+    console.log(item);
+    const icon = item.mask_adult || item.mask_child ? icons.green : icons.grey;
+    osmMap.panTo(new L.LatLng(y, x));
+    L.marker([y, x], {
+      icon,
+    }).addTo(osmMap).bindPopup(`<strong>${item.name}</strong> <br>
+    口罩剩餘：<strong>成人 - ${item.mask_adult ? `${item.mask_adult} 個` : '未取得資料'}/ 兒童 - ${item.mask_child ? `${item.mask_child} 個` : '未取得資料'}</strong><br>
+    地址: <a href="https://www.google.com.tw/maps/place/${item.address}" target="_blank">${item.address}</a><br>
+    電話: ${item.phone}<br>
+    <small>最後更新時間: ${item.updated}</small>`).openPopup();
+  },
+};
 
 export default {
   name: 'App',
@@ -103,11 +151,11 @@ export default {
       });
     },
     removeMarker() {
-      L.removeMapMarker();
+      osm.removeMapMarker();
     },
     penTo(pharmacy) {
       const { properties, geometry } = pharmacy;
-      L.penTo(geometry.coordinates[0], geometry.coordinates[1], properties);
+      osm.penTo(geometry.coordinates[0], geometry.coordinates[1], properties);
     },
     updateSelect() {
       this.removeMarker();
@@ -115,7 +163,7 @@ export default {
       const pharmacy = this.data.find((item) => (
         item.properties.town === this.select.area));
       const { geometry, properties } = pharmacy;
-      L.penTo(geometry.coordinates[0], geometry.coordinates[1], properties);
+      osm.penTo(geometry.coordinates[0], geometry.coordinates[1], properties);
     },
   },
   mounted() {
