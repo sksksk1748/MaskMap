@@ -32,7 +32,7 @@
               </select>
             </div>
           </div>
-          <p class="mb-0 small text-muted text-right">請先選擇區域查看（藍色表示還有口罩）</p>
+          <p class="mb-0 small text-muted text-right">請先選擇區域查看（藍色表示還有口罩，灰色表示無取得資料）</p>
         </div>
 
         <ul class="list-group">
@@ -121,7 +121,7 @@ const osm = {
 export default {
   name: 'App',
   data: () => ({
-    data: [],
+    data: {},
     cityName,
     osmMap: {},
     select: { //  for縣市選單
