@@ -77,14 +77,14 @@ export default {
     cityName,
     select: { //  for縣市選單
       city: '臺北市', // 預設縣市選單為台北市
-      area: '大安區',
+      area: '大安區', // 預設區域設為大安區
     },
   }),
   /* components: {
   }, */
   // components 更改為 methods
   methods: {
-    updateMap() {
+    updateMarker() {
       const pharmaies = this.data.filter((pharmacy) => (
         pharmacy.properties.county === this.select.city));
 
@@ -102,12 +102,27 @@ export default {
     <small>最後更新時間: ${properties.updated}</small>`);
       });
     },
+    removeMarker() {
+      L.removeMapMarker();
+    },
+    penTo(pharmacy) {
+      const { properties, geometry } = pharmacy;
+      L.penTo(geometry.coordinates[0], geometry.coordinates[1], properties);
+    },
+    updateSelect() {
+      this.removeMarker();
+      this.updateMarker();
+      const pharmacy = this.data.find((item) => (
+        item.properties.town === this.select.area));
+      const { geometry, properties } = pharmacy;
+      L.penTo(geometry.coordinates[0], geometry.coordinates[1], properties);
+    },
   },
   mounted() {
     const url = 'https://raw.githubusercontent.com/kiang/pharmacies/master/json/points.json'; // 藥局資料
     this.$http.get(url).then((response) => {
       this.data = response.data.features;
-      this.updateMap(); // 取得遠端資料後，插入圖標
+      this.updateMarker(); // 取得遠端資料後，插入圖標
     });
     osmMap = L.map('map', { //  'map'對應到<div id="map">
       center: [25.03, 121.55], // 地圖起始座標
