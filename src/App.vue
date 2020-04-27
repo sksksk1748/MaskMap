@@ -209,6 +209,6 @@ export default {
   }
 }
 .list-group-item{
-  background-color: rgb(65, 178, 243);
+  background-color: rgb(144, 211, 250);
 }
 </style>
