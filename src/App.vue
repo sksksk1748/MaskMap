@@ -132,4 +132,7 @@ export default {
     cursor: pointer;
   }
 }
+.list-group-item{
+  background-color: rgb(65, 178, 243);
+}
 </style>
